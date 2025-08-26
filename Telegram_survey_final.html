@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Telegram Survey</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --primary:#1c92d2;
+      --primary-dark:#157ab5;
+      --bg:#f5f7fa;
+      --card:#fff;
+      --muted:#6b7280;
+      --radius:12px;
+      --star-filled:#f6c600;
+      --star-empty:#e6eef6;
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:"Montserrat",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:#111}
+    header{background:linear-gradient(90deg,var(--primary),#27c4f5);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo img{height:36px;width:36px}
+    nav a{color:#fff;text-decoration:none;margin-left:18px;font-weight:600;opacity:.95;cursor:pointer}
+    nav a:hover{opacity:1;text-decoration:underline}
+    main{max-width:1200px;margin:28px auto;padding:0 18px}
+    .hero{background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0));border-radius:var(--radius);padding:24px;display:flex;gap:20px;align-items:center;box-shadow:0 6px 18px rgba(12,20,30,0.06)}
+    .avatar{width:84px;height:84px;border-radius:14px;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .avatar img{width:64px;height:64px}
+    .hero .content h1{font-size:20px;color:var(--primary);margin-bottom:8px}
+    .hero .content p{color:var(--muted);font-size:15px;line-height:1.4}
+    .survey-wrapper{margin-top:18px;display:grid;grid-template-columns:1fr;gap:18px}
+    .card{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 10px 24px rgba(12,20,30,0.05)}
+    .poll{display:flex;flex-direction:column;gap:12px}
+    .question{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .question h2{font-size:18px;color:#0f1724}
+    .buttons{display:flex;gap:12px}
+    .option-btn{
+      appearance:none;border:0;padding:10px 14px;border-radius:10px;background:#f1f5f9;color:var(--primary);font-weight:700;cursor:pointer;min-width:120px;text-align:center;border:1px solid rgba(12,20,30,0.04);
+      transition:transform .08s ease,background-color .08s ease,box-shadow .08s ease,color .08s ease;
+    }
+    .option-btn:hover{background:#e2e8f0;transform:translateY(-1px)}
+    .option-btn[aria-pressed="true"]{
+      background:var(--primary);color:#fff;box-shadow:0 6px 18px rgba(28,146,210,0.18);transform:translateY(-2px);
+    }
+    .results{font-size:14px;color:var(--muted)}
+    .result-bar{height:10px;background:#e6eef6;border-radius:999px;overflow:hidden}
+    .result-fill{height:100%;background:linear-gradient(90deg,var(--primary),#27c4f5);width:0%;transition:width 0.5s ease}
+    .result-fill.alt{background:#a7cbe6}
+    .feedback-counter{font-weight:600;color:#0f1724;text-align:center;margin-top:8px}
+    .submit-row{display:flex;justify-content:center;margin-top:12px;gap:10px;align-items:center}
+    .submit-btn{background:var(--primary);color:#fff;padding:12px 20px;border-radius:999px;border:0;font-weight:700;cursor:pointer;transition:background-color 0.2s ease}
+    .submit-btn:hover{background:var(--primary-dark)}
+    .submit-btn[disabled]{opacity:.55;cursor:not-allowed}
+    .reset-btn{background:#fff;border:1px solid rgba(12,20,30,0.06);color:var(--primary);padding:10px 14px;border-radius:999px;cursor:pointer;transition:background-color 0.2s ease}
+    .reset-btn:hover{background:#f8f9fa}
+    footer{margin-top:28px;padding:18px;text-align:center;color:var(--muted);font-size:13px}
+    @media (min-width:760px){
+      .survey-wrapper{grid-template-columns:2fr 1fr}
+      .hero .content h1{font-size:24px}
+    }
+
+    .star-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+    .star-btn{background:transparent;border:0;padding:6px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:transform .08s ease,filter .08s ease}
+    .star-btn:hover{transform:scale(1.1)}
+    .star-btn:focus{outline:2px solid rgba(28,146,210,0.25);outline-offset:3px}
+    .star-svg{width:28px;height:28px;display:block}
+    .star-empty{fill:#e6eef6;stroke:#cbdff0;stroke-width:1}
+    .star-filled{fill:var(--star-filled);stroke:#dcae00;stroke-width:1}
+    .rating-value{font-weight:700;color:#0f1724;font-size:14px}
+    .rating-help{color:var(--muted);font-size:13px;margin-top:6px}
+    textarea.feedback-input{width:100%;min-height:100px;padding:10px;border-radius:10px;border:1px solid rgba(12,20,30,0.06);font-size:14px;font-family:inherit;resize:vertical}
+    textarea.feedback-input:focus{outline:2px solid rgba(28,146,210,0.25);outline-offset:2px}
+    .char-counter{font-size:13px;color:var(--muted);text-align:right;margin-top:6px}
+    .label-optional{font-size:13px;color:var(--muted);margin-left:6px;font-weight:600}
+    
+    .dialog-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:none}
+    .dialog{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:25px 35px;border-radius:12px;box-shadow:0px 0px 20px rgba(0,0,0,0.4);z-index:10000;max-width:450px;text-align:center;font-family:inherit;display:none}
+    .dialog.show{display:block}
+    .dialog-overlay.show{display:block}
+    .dialog-title{font-size:18px;font-weight:700;color:var(--primary);margin-bottom:10px}
+    .dialog-text{color:var(--muted);font-size:14px;line-height:1.4;margin-bottom:20px}
+    .dialog-buttons{display:flex;gap:12px;justify-content:center}
+    .dialog-btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px}
+    .dialog-btn.primary{background:var(--primary);color:white}
+    .dialog-btn.secondary{background:#f1f5f9;color:var(--primary);border:1px solid rgba(12,20,30,0.1)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="https://telegram.org/img/t_logo.png" alt="Telegram Survey">
+      <div style="font-weight:700">Telegram Survey</div>
+    </div>
+    <nav>
+      <a href="#survey-section">Survey</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="avatar">
+        <img src="https://telegram.org/img/t_logo.png" alt="">
+      </div>
+      <div class="content">
+        <h1>Telegram Survey</h1>
+        <p>Survey tool for Telegram-related assessments and user feedback collection.</p>
+      </div>
+    </section>
+
+    <div id="survey-section" class="survey-wrapper">
+      <div class="card">
+        <form id="surveyForm">
+          <div class="poll">
+            <div class="poll-item" data-poll-key="phone">
+              <div class="question" style="flex-direction:column;align-items:flex-start;gap:10px">
+                <h2>Do you get phone calls every day and night?</h2>
+                
+
+                <div class="buttons">
+                  <button type="button" class="option-btn" data-value="yes">Yes</button>
+                  <button type="button" class="option-btn" data-value="no">No</button>
+                </div>
+              </div>
+
+              <div class="results" style="margin-top:12px">
+                <div>
+                  <div style="display:flex;justify-content:space-between">
+                    <div>Yes</div><div id="phone-yes-pct">—</div>
+                  </div>
+                  <div class="result-bar"><div id="phone-yes-fill" class="result-fill" style="width:0%"></div></div>
+                </div>
+                <div style="height:8px"></div>
+                <div>
+                  <div style="display:flex;justify-content:space-between">
+                    <div>No</div><div id="phone-no-pct">—</div>
+                  </div>
+                  <div class="result-bar"><div id="phone-no-fill" class="result-fill alt" style="width:0%"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <hr style="border:none;height:12px">
+
+            <div class="poll-item" data-poll-key="ai">
+              <div class="question">
+                <h2>Would you like AI features in Telegram</h2>
+              </div>
+                <div class="buttons">
+                  <button type="button" class="option-btn" data-value="yes">Yes</button>
+                  <button type="button" class="option-btn" data-value="no">No</button>
+                </div>
+              </div>
+
+              <div class="results" style="margin-top:12px">
+                <div>
+                  <div style="display:flex;justify-content:space-between">
+                    <div>Yes</div><div id="ai-yes-pct">—</div>
+                  </div>
+                  <div class="result-bar"><div id="ai-yes-fill" class="result-fill" style="width:0%"></div></div>
+                </div>
+                <div style="height:8px"></div>
+                <div>
+                  <div style="display:flex;justify-content:space-between">
+                    <div>No</div><div id="ai-no-pct">—</div>
+                  </div>
+                  <div class="result-bar"><div id="ai-no-fill" class="result-fill alt" style="width:0%"></div></div>
+                </div>
+              </div>
+            <div style="width:100%;margin-top:8px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                    <div>
+                      <div style="font-weight:700">Rate us</div>
+                      <div class="rating-help">Tap a star to rate (1–5). This rating is required.</div>
+                    </div>
+                    <div class="rating-value" id="rating-value">0/5</div>
+                  </div>
+
+                  <div class="star-row">
+                    <button type="button" class="star-btn" data-star="1">
+                      <svg class="star-svg" viewBox="0 0 24 24"><path class="star-empty" d="M12 17.3L6.18 20l1.18-6.87L2.5 9.75l6.92-1L12 2l2.58 6.75 6.92 1-4.86 3.38L17.82 20z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn" data-star="2">
+                      <svg class="star-svg" viewBox="0 0 24 24"><path class="star-empty" d="M12 17.3L6.18 20l1.18-6.87L2.5 9.75l6.92-1L12 2l2.58 6.75 6.92 1-4.86 3.38L17.82 20z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn" data-star="3">
+                      <svg class="star-svg" viewBox="0 0 24 24"><path class="star-empty" d="M12 17.3L6.18 20l1.18-6.87L2.5 9.75l6.92-1L12 2l2.58 6.75 6.92 1-4.86 3.38L17.82 20z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn" data-star="4">
+                      <svg class="star-svg" viewBox="0 0 24 24"><path class="star-empty" d="M12 17.3L6.18 20l1.18-6.87L2.5 9.75l6.92-1L12 2l2.58 6.75 6.92 1-4.86 3.38L17.82 20z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn" data-star="5">
+                      <svg class="star-svg" viewBox="0 0 24 24"><path class="star-empty" d="M12 17.3L6.18 20l1.18-6.87L2.5 9.75l6.92-1L12 2l2.58 6.75 6.92 1-4.86 3.38L17.82 20z"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+            </div>
+
+            <div style="margin-top:12px">
+              <label for="feedback-text" style="font-weight:700">
+                Feedback <span class="label-optional">(optional)</span>
+              </label>
+              <textarea id="feedback-text" class="feedback-input" maxlength="500" placeholder="Tell us anything you'd like to share (optional)"></textarea>
+              <div class="char-counter"><span id="char-count">0</span>/500</div>
+            </div>
+          </div>
+
+          <div class="feedback-counter" id="feedback-counter">Answered: 0 / 2</div>
+
+          <div class="submit-row">
+            <button type="submit" id="submit-btn" class="submit-btn">Submit</button>
+            <button type="button" id="reset-btn" class="reset-btn">Reset</button>
+          </div>
+
+          <p id="status-message" style="margin-top:10px;color:var(--muted);font-size:13px"></p>
+        </form>
+      </div>
+
+      <aside class="card">
+        <h3 style="margin-bottom:8px">About this tool</h3>
+        <p style="color:var(--muted);font-size:14px;line-height:1.45">
+          This survey tool is designed to collect user feedback and opinions about Telegram-related topics and features.
+        </p>
+        <div style="margin-top:12px">
+          <div style="background:linear-gradient(180deg,#fff,#f8fbff);padding:12px;border-radius:10px;border:1px solid rgba(12,20,30,0.03)">
+            <strong style="color:var(--primary)">Privacy Note:</strong> Your survey responses are collected for feedback purposes only.
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      <div>© <span id="year"></span> Telegram Survey — Your feedback matters.</div>
+    </footer>
+  </main>
+
+  <div id="success-overlay" class="dialog-overlay">
+    <div id="success-dialog" class="dialog">
+      <div class="dialog-title">✅ Successfully Submitted!</div>
+      <div class="dialog-text">Would you like to open Telegram now?</div>
+      <div class="dialog-buttons">
+        <button class="dialog-btn primary" onclick="openTelegram()">Yes, Open Telegram</button>
+        <button class="dialog-btn secondary" onclick="closeSuccessDialog()">No, Stay Here</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="error-overlay" class="dialog-overlay">
+    <div id="error-dialog" class="dialog">
+      <div class="dialog-title">Notice</div>
+      <div class="dialog-text" id="error-text"></div>
+      <div class="dialog-buttons">
+        <button class="dialog-btn primary" onclick="closeErrorDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let surveyData = { phone: null, ai: null, rating: 0, feedback: '' };
+    let answeredQuestions = 0;
+    const totalQuestions = 2;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('year').textContent = new Date().getFullYear();
+      
+      document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const pollItem = this.closest('.poll-item');
+          const pollKey = pollItem.dataset.pollKey;
+          const value = this.dataset.value;
+          
+          pollItem.querySelectorAll('.option-btn').forEach(sibling => {
+            sibling.setAttribute('aria-pressed', 'false');
+          });
+          
+          this.setAttribute('aria-pressed', 'true');
+          
+          const wasAnswered = surveyData[pollKey] !== null;
+          surveyData[pollKey] = value;
+          
+          if (!wasAnswered) answeredQuestions++;
+          
+          updateResults(pollKey, value);
+          updateFeedbackCounter();
+        });
+      });
+      
+      document.querySelectorAll('.star-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const starNumber = parseInt(this.dataset.star);
+          surveyData.rating = starNumber;
+          
+          updateStarDisplay(starNumber);
+          document.getElementById('rating-value').textContent = starNumber + '/5';
+        });
+      });
+      
+      const textarea = document.getElementById('feedback-text');
+      textarea.addEventListener('input', function() {
+        document.getElementById('char-count').textContent = this.value.length;
+        surveyData.feedback = this.value;
+      });
+      
+      document.getElementById('surveyForm').addEventListener('submit', handleSubmit);
+      document.getElementById('reset-btn').addEventListener('click', handleReset);
+      
+      updateFeedbackCounter();
+    });
+
+    function updateStarDisplay(rating) {
+      document.querySelectorAll('.star-btn').forEach((btn, index) => {
+        const starPath = btn.querySelector('path');
+        if (index < rating) {
+          starPath.classList.remove('star-empty');
+          starPath.classList.add('star-filled');
+        } else {
+          starPath.classList.remove('star-filled');
+          starPath.classList.add('star-empty');
+        }
+      });
+    }
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      
+      const missing = [];
+      if (surveyData.phone === null) missing.push('Question 1: Phone calls');
+      if (surveyData.ai === null) missing.push('Question 2: AI features');
+      if (surveyData.rating === 0) missing.push('Rating (please select at least 1 star)');
+      
+      if (missing.length > 0) {
+        showErrorDialog('Please complete the following:\n\n• ' + missing.join('\n• '));
+        return;
+      }
+
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      setTimeout(() => {
+        submitBtn.textContent = 'Submitted';
+        showSuccessDialog();
+      }, 1000);
+    }
+
+    function handleReset() {
+      surveyData = { phone: null, ai: null, rating: 0, feedback: '' };
+      answeredQuestions = 0;
+      
+      document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.setAttribute('aria-pressed', 'false');
+      });
+      
+      updateStarDisplay(0);
+      document.getElementById('rating-value').textContent = '0/5';
+      
+      document.getElementById('feedback-text').value = '';
+      document.getElementById('char-count').textContent = '0';
+      
+      resetResults();
+      updateFeedbackCounter();
+      
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit';
+    }
+
+    function updateResults(pollKey, selectedValue) {
+      const mockResults = { phone: { yes: 65, no: 35 }, ai: { yes: 78, no: 22 } };
+      const results = mockResults[pollKey];
+      if (!results) return;
+      
+      document.getElementById(pollKey + '-yes-pct').textContent = results.yes + '%';
+      document.getElementById(pollKey + '-no-pct').textContent = results.no + '%';
+      
+      setTimeout(() => {
+        document.getElementById(pollKey + '-yes-fill').style.width = results.yes + '%';
+        document.getElementById(pollKey + '-no-fill').style.width = results.no + '%';
+      }, 100);
+    }
+
+    function resetResults() {
+      ['phone', 'ai'].forEach(key => {
+        document.getElementById(key + '-yes-pct').textContent = '—';
+        document.getElementById(key + '-no-pct').textContent = '—';
+        document.getElementById(key + '-yes-fill').style.width = '0%';
+        document.getElementById(key + '-no-fill').style.width = '0%';
+      });
+    }
+
+    function updateFeedbackCounter() {
+      document.getElementById('feedback-counter').textContent = 'Answered: ' + answeredQuestions + ' / ' + totalQuestions;
+    }
+
+    function showSuccessDialog() {
+      document.getElementById('success-overlay').classList.add('show');
+      document.getElementById('success-dialog').classList.add('show');
+    }
+
+    function closeSuccessDialog() {
+      document.getElementById('success-overlay').classList.remove('show');
+      document.getElementById('success-dialog').classList.remove('show');
+      setTimeout(() => location.reload(), 500);
+    }
+
+    function showErrorDialog(message) {
+      document.getElementById('error-text').textContent = message;
+      document.getElementById('error-overlay').classList.add('show');
+      document.getElementById('error-dialog').classList.add('show');
+    }
+
+    function closeErrorDialog() {
+      document.getElementById('error-overlay').classList.remove('show');
+      document.getElementById('error-dialog').classList.remove('show');
+    }
+
+    function openTelegram() {
+      console.log('Opening Telegram...');
+      
+      // Don't close success dialog automatically - keep it open until user presses cancel or close
+      document.getElementById('status-message').textContent = 'Opening Telegram... Please wait 2 minutes before redirect.';
+      document.getElementById('status-message').style.color = 'var(--primary)';
+      
+      // Method 1: Multiple protocol attempts
+      const protocols = ['tg://', 'tg://msg', 'telegram://', 'telegram://msg'];
+      let protocolIndex = 0;
+      
+      function tryNextProtocol() {
+        if (protocolIndex < protocols.length) {
+          const protocol = protocols[protocolIndex];
+          console.log('Trying protocol:', protocol);
+          
+          try {
+            // Create and click invisible link
+            const link = document.createElement('a');
+            link.href = protocol;
+            link.style.position = 'absolute';
+            link.style.left = '-9999px';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Also try direct navigation
+            window.location.href = protocol;
+          } catch (e) {
+            console.log('Protocol failed:', protocol, e);
+          }
+          
+          protocolIndex++;
+          setTimeout(tryNextProtocol, 800);
+        }
+      }
+      
+      tryNextProtocol();
+      
+      // Method 2: Iframe approach
+      setTimeout(() => {
+        try {
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = 'tg://';
+          document.body.appendChild(iframe);
+          
+          setTimeout(() => {
+            if (iframe.parentNode) {
+              document.body.removeChild(iframe);
+            }
+          }, 2000);
+        } catch (e) {
+          console.log('Iframe method failed:', e);
+        }
+      }, 1000);
+      
+      // After 2 minutes (120 seconds), redirect to current working page
+      setTimeout(() => {
+        console.log('2 minutes elapsed, redirecting to current working page...');
+        document.getElementById('status-message').textContent = 'Redirecting to current working page...';
+        document.getElementById('status-message').style.color = 'var(--success)';
+        
+        // Redirect to current working page (reload the page)
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }, 120000); // 120,000 milliseconds = 2 minutes
+    }
+  </script>
+</body>
+</html>
